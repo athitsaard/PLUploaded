@@ -1,0 +1,163 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    
+}
+
+
+    <div class="text-center">
+        <h1 class="display-4">Welcome</h1>
+        <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+        <h1>Events example</h1>
+
+
+
+        <ul id="filelist"></ul>
+        <br />
+        <div id="container">
+            @*<a id="pickfiles" href="javascript:;" class="btn btn-danger">[Select files]</a>*@
+            <a id="pickfile1" href="javascript:;" class="btn btn-info">[Select file1]</a>
+            <a id="uploadfiles" href="javascript:;">[Upload files]</a>
+        </div>
+
+        
+        
+       
+    </div>
+
+
+@section Scripts
+{
+    <script type="text/javascript">
+      
+
+        $('a').click(function () {
+         
+            //console.log($('#fileMetadata').val($(this).attr('id'))); // กำหนดค่าให้
+            //console.log($('#fileMetadata').val());        
+
+        });
+
+      
+
+        var uploader = new plupload.Uploader({
+           //browse_button: ['pickfiles', 'pickfile1'], // this can be an id of a DOM element or the DOM element itself {'FileReferenceId':'98AD18D4-22D1-4F50-A9F3-E067DED0E705'}
+            browse_button: ['pickfile1'],
+            url: '@Url.Action("FileUpload","Home")',  
+            chunk_size: '1mb',
+            multipart_params: {
+                "fileMetadata": ""
+            }
+        });
+
+        uploader.init();  // we call it, before we bind any event listeners to the uploader.
+
+
+        uploader.bind('FilesAdded', function (PLupload, files) {
+            console.log(PLupload);
+                
+            var fileid;
+            var html = '';
+            plupload.each(files, function (file) {
+              //  console.log("FilesAdded:" + file.id + "-" + file.name + "-" + file.size);
+                fileid = file.id;
+               
+                html += '<li id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></li>';
+            });
+          
+
+            PLupload.settings.multipart_params.fileMetadata = '{ "FileReferenceId": "' + fileid + '" }';
+           //PLupload.settings.url = PLupload.settings.url + '{ "FileReferenceId": "' + fileid+'" }' ;        
+            document.getElementById('filelist').innerHTML += html;
+            //uploader.start();
+        });
+
+
+        uploader.bind('UploadProgress', function (up, file) {
+            document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+          //  up.trigger("disableBrowse", false);
+        });
+
+
+        uploader.bind('Error', function (up, err) {
+            document.getElementById('console').innerHTML += "\nError #" + err.code + ": " + err.message;
+        });
+
+        uploader.bind('ChunkUploaded', function (up, file,info) {
+               // Called when file chunk has finished uploading
+            log('[ChunkUploaded] File:', file, "Info:", info);
+          //  up.trigger("disableBrowse", false);
+        });
+
+        //ChunkUploaded: function(up, file, info) {
+        //    // Called when file chunk has finished uploading
+        //    log('[ChunkUploaded] File:', file, "Info:", info);
+        //};
+
+        document.getElementById('uploadfiles').onclick = function () {
+           // uploader.disableBrowse(true);          
+           // uploader.start();
+            //console.log(uploader);
+            $.each(uploader.files, function (i, file) {
+               // console.log(file.id);
+            });
+          
+            uploader.start();
+
+        };
+
+        function log() {
+            var str = "";
+
+            plupload.each(arguments, function (arg) {
+                var row = "";
+                console.log("arg is : "+ arg);
+                if (typeof (arg) != "string") {
+                    plupload.each(arg, function (value, key) {  // arg ที่เปน Object จะมี key กับ Value
+                        // Convert items in File objects to human readable form
+                        if (arg instanceof plupload.File) {
+                            // Convert status to human readable
+                            switch (value) {
+                                case plupload.QUEUED:
+                                    value = 'QUEUED1';
+                                    break;
+
+                                case plupload.UPLOADING:
+                                    value = 'UPLOADING1';
+                                    break;
+
+                                case plupload.FAILED:
+                                    value = 'FAILED1';
+                                    break;
+
+                                case plupload.DONE:
+                                    value = 'DONE1';
+                                    break;
+                            }
+                        }
+
+                        if (typeof (value) != "function") {
+                          //  console.log("row -" + row);
+                            row += (row ? ', ' : '') + key + '=' + value ;
+                        }
+                    });
+
+
+                   // console.log("str before : " + str);
+
+                    str += row + " ";
+
+                   // console.log("str after : " + str);
+                } else {
+                  //  console.log("arg name is " + arg);
+                    str += arg + " ";
+                 
+
+                }
+            });
+
+            //var log = document.getElementById('console');
+            //log.innerHTML += str + "\n";
+        }
+    </script>
+}
