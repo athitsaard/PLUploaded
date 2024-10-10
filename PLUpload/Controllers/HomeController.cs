@@ -34,6 +34,8 @@ namespace PLUpload.Controllers
         public void FileUpload([FromForm] string fileMetadata)
         {
             var fileMeta = string.IsNullOrEmpty(fileMetadata) ? new FileMetadata() : JsonConvert.DeserializeObject<FileMetadata>(fileMetadata);
+            var chunk = _context.HttpContext.Request.Form["chunk"]; 
+            var chunks = _context.HttpContext.Request.Form["chunks"];
 
             if (_context.HttpContext.Request.Form.Files.Count < 1)
             {
